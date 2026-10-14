@@ -115,6 +115,16 @@
   margin: 0;
 }
 
+.add-to-cart {
+  margin-top: 0.5rem;
+}
+
+.cart-note {
+  margin: 0.25rem 0 0;
+  color: var(--color-ink-muted);
+  font-size: 0.875rem;
+}
+
 /* ---- one product --------------------------------------------------------------------------------------------- */
 .product-detail {
   display: grid;
