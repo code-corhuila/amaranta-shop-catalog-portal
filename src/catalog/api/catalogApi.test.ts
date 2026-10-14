@@ -1,7 +1,7 @@
 import { apiClient } from 'shell/apiClient';
 import { describe, expect, it, vi } from 'vitest';
 import type { Page, Product } from '../model/product';
-import { getProduct, listProducts } from './catalogApi';
+import { getProduct, listAllProducts, listProducts } from './catalogApi';
 
 const dogFood: Product = {
   id: '3f0b6c7e-0000-4000-8000-000000000001',
@@ -55,5 +55,43 @@ describe('getProduct', () => {
     vi.mocked(apiClient.get).mockResolvedValue({ status: 200, data: dogFood, location: null });
     await getProduct('../../internal/products/reserve-stock');
     expect(apiClient.get).toHaveBeenCalledWith('/api/v1/products/..%2F..%2Finternal%2Fproducts%2Freserve-stock', {});
+  });
+});
+
+describe('listAllProducts', () => {
+  const answer = (items: Product[], page: number, totalPages: number) => ({
+    status: 200,
+    location: null,
+    data: { data: items, meta: { page, limit: 100, total: 3, totalPages } } satisfies Page<Product>,
+  });
+
+  it('asks for pages of 100 until the last one, and gives them back as one list', async () => {
+    vi.mocked(apiClient.get)
+      .mockResolvedValueOnce(answer([dogFood], 1, 2))
+      .mockResolvedValueOnce(answer([{ ...dogFood, id: 'second' }], 2, 2));
+
+    const all = await listAllProducts();
+
+    expect(vi.mocked(apiClient.get).mock.calls.map((c) => c[0])).toEqual(['/api/v1/products?page=1&limit=100', '/api/v1/products?page=2&limit=100']);
+    expect(all.map((p) => p.id)).toEqual([dogFood.id, 'second']);
+  });
+
+  it('stops at the first page when there is only one', async () => {
+    vi.mocked(apiClient.get).mockResolvedValue(answer([dogFood], 1, 1));
+    await listAllProducts();
+    expect(apiClient.get).toHaveBeenCalledTimes(1);
+  });
+
+  it('gives up after 50 pages, whatever the service claims, instead of loading a catalog without end', async () => {
+    vi.mocked(apiClient.get).mockResolvedValue(answer([dogFood], 1, 9999));
+    await listAllProducts();
+    expect(apiClient.get).toHaveBeenCalledTimes(50);
+  });
+
+  it('passes the signal on to every request', async () => {
+    vi.mocked(apiClient.get).mockResolvedValue(answer([dogFood], 1, 2));
+    const controller = new AbortController();
+    await listAllProducts(controller.signal);
+    for (const call of vi.mocked(apiClient.get).mock.calls) expect(call[1]).toEqual({ signal: controller.signal });
   });
 });
