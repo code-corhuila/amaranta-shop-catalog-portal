@@ -6,7 +6,10 @@ export default defineConfig({
   plugins: [react()],
   resolve: {
     // Tests run in a Linux container, where the path of the URL is the path of the file.
-    alias: { 'shell/apiClient': new URL('./src/test/shellStub.ts', import.meta.url).pathname },
+    alias: {
+      'shell/apiClient': new URL('./src/test/shellStub.ts', import.meta.url).pathname,
+      'shell/auth': new URL('./src/test/shellAuthStub.tsx', import.meta.url).pathname,
+    },
   },
   test: {
     environment: 'jsdom',
