@@ -2,6 +2,7 @@ import { Link, useParams } from 'react-router-dom';
 import { getProduct } from '../api/catalogApi';
 import { FailureNotice } from '../components/FailureNotice';
 import { useRequest } from '../hooks/useRequest';
+import { AddToCartButton } from '../components/AddToCartButton';
 import { categoryLabel } from '../model/filters';
 
 /** A 404 (it does not exist) or a 400 (the address is not an id): asking again would get the same answer. */
@@ -32,6 +33,7 @@ export function ProductPage() {
             <p className="product-price">{state.data.priceFormatted}</p>
             {state.data.inStock ? <p className="chip chip-stock">{`${state.data.stockQuantity} disponibles`}</p> : <p className="chip chip-soldout">Agotado</p>}
             <p>Código: {state.data.sku}</p>
+            <AddToCartButton product={state.data} />
           </div>
         </article>
       )}
