@@ -136,7 +136,7 @@ export function AdminListPage() {
                           </div>
                         ) : (
                           <div className="row-actions">
-                            <Link to={`${encodeURIComponent(product.id)}/edit`} aria-label={`Editar ${product.name}`}>
+                            <Link to={`${encodeURIComponent(product.id)}/edit`} className="btn" aria-label={`Editar ${product.name}`}>
                               Editar
                             </Link>
                             <button
