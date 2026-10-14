@@ -1,5 +1,6 @@
 import { Link } from 'react-router-dom';
 import { categoryLabel } from '../model/filters';
+import { AddToCartButton } from './AddToCartButton';
 import type { Product } from '../model/product';
 
 /** One product of the list. The price is shown as the service formatted it: the portal never does arithmetic with money. */
@@ -14,6 +15,7 @@ export function ProductCard({ product }: { product: Product }) {
       {product.description && <p>{product.description}</p>}
       <p className="product-price">{product.priceFormatted}</p>
       {product.inStock ? <p className="chip chip-stock">{`${product.stockQuantity} disponibles`}</p> : <p className="chip chip-soldout">Agotado</p>}
+      <AddToCartButton product={product} />
     </li>
   );
 }

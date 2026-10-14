@@ -9,6 +9,7 @@ export default defineConfig({
     alias: {
       'shell/apiClient': new URL('./src/test/shellStub.ts', import.meta.url).pathname,
       'shell/auth': new URL('./src/test/shellAuthStub.tsx', import.meta.url).pathname,
+      'shell/cart': new URL('./src/test/shellCartStub.ts', import.meta.url).pathname,
     },
   },
   test: {
