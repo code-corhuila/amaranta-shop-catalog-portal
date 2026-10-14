@@ -25,3 +25,18 @@ declare module 'shell/apiClient' {
 
   export const apiClient: ShellApiClient;
 }
+
+// What the shell lends so a screen can ask who is signed in WITHOUT holding the token: the role and the subject, and a guard
+// for a screen that only one role may use. The services check the role again on every request.
+declare module 'shell/auth' {
+  import type { ReactNode } from 'react';
+
+  export interface SessionInfo {
+    readonly signedIn: boolean;
+    readonly role: string | null;
+    readonly subject: string | null;
+  }
+
+  export function useSessionInfo(): SessionInfo;
+  export function RequireRole(props: { readonly role: string; readonly children: ReactNode }): ReactNode;
+}
