@@ -51,6 +51,11 @@ describe('the portal obeys the rule of the shell (Annex H)', () => {
     for (const [path, source] of users) expect(code(source), path).toContain("from 'shell/apiClient'");
   });
 
+  it('does not keep a cart of its own: it uses the one the shell keeps, through shell/cart', () => {
+    const cartUsers = Object.entries(files).filter(([, source]) => /useCart|cartStore|CartStore/.test(code(source)));
+    for (const [path, source] of cartUsers) expect(code(source), path).toContain("from 'shell/cart'");
+  });
+
   it('does not read the session except through shell/auth, which never hands over the token', () => {
     const sessionUsers = Object.entries(files).filter(([, source]) => /useSession|SessionStore|sessionStore/.test(code(source)));
     for (const [path, source] of sessionUsers) expect(code(source), path).toContain("from 'shell/auth'");
