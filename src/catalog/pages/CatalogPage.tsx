@@ -78,7 +78,18 @@ export function CatalogPage() {
         onClear={() => go({ q: '', category: null })}
       />
 
-      {state.status === 'loading' && <p role="status">Cargando productos…</p>}
+      {state.status === 'loading' && (
+        <>
+          <p role="status" className="sr-only">
+            Cargando productos…
+          </p>
+          <ul className="product-grid" aria-hidden="true">
+            {Array.from({ length: 6 }, (_, i) => (
+              <li key={i} className="skeleton product-skeleton" />
+            ))}
+          </ul>
+        </>
+      )}
 
       {state.status === 'error' && <FailureNotice failure={state.failure} onRetry={retry} />}
 

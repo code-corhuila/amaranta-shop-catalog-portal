@@ -15,6 +15,8 @@ export default defineConfig({
     environment: 'jsdom',
     setupFiles: ['./src/test-setup.ts'],
     include: ['src/**/*.test.{ts,tsx}'],
+    // Vitest empties every imported stylesheet unless told to process it, and the style test reads the CSS itself.
+    css: { include: [/src\/catalog\/.*\.css/] },
     restoreMocks: true,
   },
 });
