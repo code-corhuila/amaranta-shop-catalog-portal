@@ -2,6 +2,7 @@ import { Link, useParams } from 'react-router-dom';
 import { getProduct } from '../api/catalogApi';
 import { FailureNotice } from '../components/FailureNotice';
 import { useRequest } from '../hooks/useRequest';
+import { categoryLabel } from '../model/filters';
 
 /** A 404 (it does not exist) or a 400 (the address is not an id): asking again would get the same answer. */
 const NOTHING_TO_RETRY = new Set([400, 404]);
@@ -22,15 +23,16 @@ export function ProductPage() {
       {state.status === 'error' && <FailureNotice failure={state.failure} onRetry={retry} retryable={!NOTHING_TO_RETRY.has(state.failure.status ?? -1)} />}
 
       {state.status === 'success' && (
-        <article>
-          <h2>{state.data.name}</h2>
-          {state.data.imageUrl && <img src={state.data.imageUrl} alt={state.data.name} width={320} height={320} />}
-          {state.data.description && <p>{state.data.description}</p>}
-          <p>{state.data.priceFormatted}</p>
-          <p>{state.data.inStock ? `${state.data.stockQuantity} disponibles` : 'Agotado'}</p>
-          <p>
-            Categoría: {state.data.category} · Código: {state.data.sku}
-          </p>
+        <article className="product-detail">
+          {state.data.imageUrl && <img className="product-photo" src={state.data.imageUrl} alt={state.data.name} width={320} height={320} />}
+          <div>
+            <span className="chip chip-category">{categoryLabel(state.data.category)}</span>
+            <h2>{state.data.name}</h2>
+            {state.data.description && <p>{state.data.description}</p>}
+            <p className="product-price">{state.data.priceFormatted}</p>
+            {state.data.inStock ? <p className="chip chip-stock">{`${state.data.stockQuantity} disponibles`}</p> : <p className="chip chip-soldout">Agotado</p>}
+            <p>Código: {state.data.sku}</p>
+          </div>
         </article>
       )}
     </section>

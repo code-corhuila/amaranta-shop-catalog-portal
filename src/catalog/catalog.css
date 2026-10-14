@@ -1,0 +1,225 @@
+/*
+ * What is the catalog's own: the product grid and its card, the filters, the pager, the administration table and the detail.
+ * Everything else (type, buttons, fields, alerts, focus, reduced motion) comes from the shell's base styles, and every
+ * colour, radius and shadow here is a token of the shell (src/styles/tokens.css in amaranta-shop-front): this file has no
+ * colour of its own, so the whole application changes in one place (ADR-007). catalog.css.test.ts checks it.
+ */
+
+/* ---- the public catalog -------------------------------------------------------------------------------------- */
+.filter-bar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  gap: 0 1rem;
+  margin: 1rem 0 1.5rem;
+}
+
+.filter-bar .field {
+  flex: 1 1 14rem;
+  max-width: 22rem;
+}
+
+.product-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(15rem, 1fr));
+  gap: 1.25rem;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.product-card {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 0.5rem;
+  padding: 1rem;
+  border-radius: var(--radius-xl2);
+  background: var(--surface);
+  box-shadow: var(--shadow-card);
+}
+
+.product-card h3 {
+  margin: 0;
+  font-size: 1.0625rem;
+}
+
+.product-card h3 a {
+  color: var(--color-ink-900);
+  text-decoration: none;
+}
+
+.product-card h3 a:hover {
+  color: var(--color-ember-700);
+  text-decoration: underline;
+}
+
+.product-card p {
+  margin: 0;
+}
+
+.product-photo {
+  width: 100%;
+  aspect-ratio: 1;
+  object-fit: cover;
+  border-radius: var(--radius-lg);
+  background: var(--color-cream-100);
+}
+
+.product-price {
+  margin-top: auto;
+  color: var(--color-ember-700);
+  font-family: var(--font-family-display);
+  font-size: 1.25rem;
+  font-weight: 600;
+}
+
+.chip {
+  display: inline-block;
+  padding: 0.125rem 0.625rem;
+  border-radius: var(--radius-full);
+  font-size: 0.8125rem;
+  font-weight: 500;
+  line-height: 1.5;
+}
+
+.chip-category {
+  background: var(--color-cream-100);
+  color: var(--color-ink-900);
+}
+
+.chip-stock {
+  background: var(--alert-success-bg);
+  color: var(--alert-success-text);
+}
+
+.chip-soldout {
+  background: var(--color-ember-100);
+  color: var(--color-ember-700);
+}
+
+/* While it loads: blocks in the shape of the cards, so the page does not jump when the products arrive. */
+.product-skeleton {
+  min-height: 15rem;
+}
+
+.pager {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 1rem;
+  margin-top: 2rem;
+}
+
+.pager p {
+  margin: 0;
+}
+
+/* ---- one product --------------------------------------------------------------------------------------------- */
+.product-detail {
+  display: grid;
+  grid-template-columns: minmax(0, 20rem) 1fr;
+  gap: 2rem;
+  align-items: start;
+  padding: 1.5rem;
+  border-radius: var(--radius-xl2);
+  background: var(--surface);
+  box-shadow: var(--shadow-card);
+}
+
+.product-detail h2 {
+  margin-top: 0;
+}
+
+.product-detail:not(:has(img)) {
+  grid-template-columns: 1fr;
+}
+
+/* ---- the administration -------------------------------------------------------------------------------------- */
+.admin-links {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 1rem;
+  margin-bottom: 1.5rem;
+}
+
+.notice-success {
+  padding: 0.75rem 1rem;
+  border: 1px solid var(--alert-success-border);
+  border-radius: var(--radius-lg);
+  background: var(--alert-success-bg);
+  color: var(--alert-success-text);
+}
+
+.table-wrap {
+  overflow-x: auto;
+  border-radius: var(--radius-lg);
+  background: var(--surface);
+  box-shadow: var(--shadow-card);
+}
+
+.table-wrap table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.table-wrap caption {
+  padding: 0.75rem 0.875rem;
+  text-align: left;
+  font-family: var(--font-family-display);
+  font-weight: 600;
+}
+
+.table-wrap th,
+.table-wrap td {
+  padding: 0.625rem 0.875rem;
+  text-align: left;
+  vertical-align: middle;
+  border-top: 1px solid var(--color-cream-100);
+}
+
+.table-wrap thead th {
+  background: var(--color-cream-100);
+  font-size: 0.875rem;
+}
+
+.table-wrap tbody th {
+  font-weight: 600;
+}
+
+.row-actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.row-actions .btn,
+.row-actions button {
+  padding: 0.25rem 0.75rem;
+  font-size: 0.875rem;
+}
+
+/* ---- forms --------------------------------------------------------------------------------------------------- */
+.product-form,
+.stock-form {
+  max-width: 36rem;
+  margin-bottom: 2rem;
+}
+
+.product-form textarea {
+  resize: vertical;
+}
+
+/* ---- a narrow screen ------------------------------------------------------------------------------------------ */
+@media (max-width: 40rem) {
+  .product-detail {
+    grid-template-columns: 1fr;
+    gap: 1rem;
+  }
+
+  .filter-bar .field {
+    max-width: none;
+  }
+}
