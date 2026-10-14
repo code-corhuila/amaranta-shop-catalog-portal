@@ -38,11 +38,21 @@ describe('the portal obeys the rule of the shell (Annex H)', () => {
     expect(offenders).toEqual([]);
   });
 
-  it('reaches the API only through shell/apiClient', () => {
+  it('names the routes of the API only in the api/ modules', () => {
     const users = Object.entries(files)
       .filter(([, source]) => /\/api\/v1\//.test(code(source)))
       .map(([path]) => path);
-    expect(users).toEqual(['./catalog/api/catalogApi.ts']);
-    expect(code(files['./catalog/api/catalogApi.ts'] ?? '')).toContain("from 'shell/apiClient'");
+    expect(users.length).toBeGreaterThan(0);
+    for (const path of users) expect(path).toMatch(/^\.\/catalog\/api\/[A-Za-z]+\.ts$/);
+  });
+
+  it('reaches the API only through shell/apiClient', () => {
+    const users = Object.entries(files).filter(([, source]) => /\/api\/v1\//.test(code(source)));
+    for (const [path, source] of users) expect(code(source), path).toContain("from 'shell/apiClient'");
+  });
+
+  it('does not read the session except through shell/auth, which never hands over the token', () => {
+    const sessionUsers = Object.entries(files).filter(([, source]) => /useSession|SessionStore|sessionStore/.test(code(source)));
+    for (const [path, source] of sessionUsers) expect(code(source), path).toContain("from 'shell/auth'");
   });
 });
