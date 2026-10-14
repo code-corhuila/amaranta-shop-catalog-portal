@@ -137,6 +137,34 @@ check() {
   expect_code "an admin: the list answers" 200 -H "Authorization: Bearer $ADMIN_T" "$G/api/v1/admin/products"
   expect_code "a token with a broken signature is the service's 401" 401 -H "Authorization: Bearer ${ADMIN_T%?}x" "$G/api/v1/admin/products"
 
+  echo "the administration, for real: create, refuse, edit, set the stock, switch off and on, delete"
+  local JSON=(-H 'Content-Type: application/json') AUTH=(-H "Authorization: Bearer $ADMIN_T")
+  local NEW='{"sku":"E2E-0001","name":"Producto de prueba","description":"Creado por e2e","category":"TOYS","price":12500,"stockQuantity":4,"imageUrl":""}'
+  local created id
+  created="$(curl_net -i -X POST "${JSON[@]}" "${AUTH[@]}" -d "$NEW" "$G/api/v1/admin/products")"
+  if echo "$created" | head -1 | grep -q 201; then ok "an admin creates a product (201)"; else bad "creating a product: $(echo "$created" | head -1)"; fi
+  id="$(echo "$created" | grep -o '"id":"[^"]*"' | head -1 | cut -d'"' -f4)"
+  if echo "$created" | grep -qi "^location: /api/v1/admin/products/$id"; then ok "...and the Location names it"; else bad "...but the Location does not name it"; fi
+  expect_body "...and a visitor sees it in the public catalog" '"total":11' "$G/api/v1/products?limit=100"
+  expect_code "a customer cannot create one" 403 -X POST "${JSON[@]}" -H "Authorization: Bearer $CUSTOMER_T" -d "$NEW" "$G/api/v1/admin/products"
+  expect_body "a code that is already taken is a 422 naming the rule" 'SKU_ALREADY_EXISTS' -X POST "${JSON[@]}" "${AUTH[@]}" -d "$NEW" "$G/api/v1/admin/products"
+  expect_code "10.5 pesos is refused, not rounded (400)" 400 -X POST "${JSON[@]}" "${AUTH[@]}" -d "${NEW/12500/10.5}" "$G/api/v1/admin/products"
+  expect_body "...and the detail names the field" '"field":"price"' -X POST "${JSON[@]}" "${AUTH[@]}" -d "${NEW/12500/10.5}" "$G/api/v1/admin/products"
+  expect_body "an edit changes only what it names" '"price":20000' -X PATCH "${JSON[@]}" "${AUTH[@]}" -d '{"price":20000}' "$G/api/v1/admin/products/$id"
+  expect_body "...and nothing else" '"name":"Producto de prueba"' "$G/api/v1/products/$id"
+  expect_code "an edit that names nothing is a 400" 400 -X PATCH "${JSON[@]}" "${AUTH[@]}" -d '{}' "$G/api/v1/admin/products/$id"
+  expect_body "the stock is set exactly" '"stockQuantity":0,"inStock":false' -X PATCH "${JSON[@]}" "${AUTH[@]}" -d '{"stockQuantity":0}' "$G/api/v1/admin/products/$id/stock"
+  expect_body "a stock of 2.5 is refused, and the detail names the stock field" '"field":"stockQuantity"' -X PATCH "${JSON[@]}" "${AUTH[@]}" -d '{"stockQuantity":2.5}' "$G/api/v1/admin/products/$id/stock"
+  expect_code "...with a 400" 400 -X PATCH "${JSON[@]}" "${AUTH[@]}" -d '{"stockQuantity":2.5}' "$G/api/v1/admin/products/$id/stock"
+  expect_body "switched off, it is listed as inactive by the administration" '"isActive":false' -X POST "${AUTH[@]}" "$G/api/v1/admin/products/$id/deactivate"
+  expect_code "...a visitor can no longer read it (404)" 404 "$G/api/v1/products/$id"
+  expect_body "...and the public catalog is back to ten" '"total":10' "$G/api/v1/products?limit=100"
+  expect_body "...while the administration still lists it" "$id" "${AUTH[@]}" "$G/api/v1/admin/products?limit=100"
+  expect_code "switched on, a visitor reads it again (200)" 200 -X POST "${AUTH[@]}" "$G/api/v1/admin/products/$id/activate"
+  expect_code "it is deleted (204)" 204 -X DELETE "${AUTH[@]}" "$G/api/v1/admin/products/$id"
+  expect_code "...and then it is gone (404)" 404 -X DELETE "${AUTH[@]}" "$G/api/v1/admin/products/$id"
+  expect_body "...and the catalog is as it was" '"total":10' "$G/api/v1/products?limit=100"
+
   echo "what the gateway never publishes"
   expect_code "reserve-stock is not routed" 404 -X POST -H "Authorization: Bearer $ADMIN_T" "$G/internal/products/reserve-stock"
   expect_code "nor under the public prefix" 404 -X POST -H "Authorization: Bearer $ADMIN_T" "$G/api/v1/internal/products/reserve-stock"
