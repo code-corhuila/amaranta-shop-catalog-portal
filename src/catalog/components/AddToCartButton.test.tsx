@@ -1,9 +1,13 @@
-import { render, screen } from '@testing-library/react';
+import { act, render, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { afterEach, describe, expect, it, vi } from 'vitest';
+import { flyToCart } from '../animation/flyToCart';
 import { cart } from '../../test/shellCartStub';
 import { product } from '../../test/fixtures';
 import { AddToCartButton } from './AddToCartButton';
+
+// The flight is tested on its own; here it lands at once, unless a test holds it in the air.
+vi.mock('../animation/flyToCart', () => ({ flyToCart: vi.fn(() => Promise.resolve()) }));
 
 const croquetas = product({ id: 'p-1', name: 'Croquetas Adulto', price: 189_000, priceFormatted: '$ 189.000', stockQuantity: 24, imageUrl: 'https://example.test/a.png' });
 
@@ -18,11 +22,33 @@ describe('the "Agregar" button', () => {
     expect(screen.getByRole('button', { name: 'Agregar Croquetas Adulto al carrito' })).toBeEnabled();
   });
 
-  it('adds one unit of what the person saw: the name and the price of this moment, and says it was added', async () => {
+  it('adds one unit of what the person saw: the name and the price of this moment', async () => {
     render(<AddToCartButton product={croquetas} />);
     await userEvent.click(screen.getByRole('button', { name: /agregar/i }));
     expect(cart.add).toHaveBeenCalledWith({ productId: 'p-1', name: 'Croquetas Adulto', price: 189_000, priceFormatted: '$ 189.000', imageUrl: 'https://example.test/a.png' }, 1);
-    expect(screen.getByRole('status')).toHaveTextContent('Agregado al carrito.');
+  });
+
+  it('confirms with the flight of the product, not with a sentence on the card: the words stay only for a screen reader', async () => {
+    render(<AddToCartButton product={croquetas} />);
+    await userEvent.click(screen.getByRole('button', { name: /agregar/i }));
+    const status = screen.getByRole('status');
+    expect(status).toHaveTextContent('Agregado al carrito.');
+    expect(status).toHaveClass('sr-only');
+  });
+
+  it('flies the picture of the product, and adds to the cart only when it lands, with the button disabled meanwhile', async () => {
+    let land: () => void = () => undefined;
+    vi.mocked(flyToCart).mockReturnValueOnce(new Promise<void>((resolve) => (land = resolve)));
+    render(<AddToCartButton product={croquetas} />);
+    await userEvent.click(screen.getByRole('button', { name: /agregar/i }));
+
+    expect(flyToCart).toHaveBeenCalledWith(expect.anything(), 'https://example.test/a.png');
+    expect(cart.add).not.toHaveBeenCalled();
+    expect(screen.getByRole('button', { name: /agregar/i })).toBeDisabled();
+
+    await act(async () => land());
+    expect(cart.add).toHaveBeenCalledTimes(1);
+    expect(screen.getByRole('button', { name: /agregar/i })).toBeEnabled();
   });
 
   it('sends an empty picture as none', async () => {
