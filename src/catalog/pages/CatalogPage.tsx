@@ -1,8 +1,10 @@
 import { useMemo } from 'react';
 import { Link, useSearchParams } from 'react-router-dom';
+import { useSessionInfo } from 'shell/auth';
 import { listAllProducts, listProducts } from '../api/catalogApi';
 import { FailureNotice } from '../components/FailureNotice';
 import { FilterBar } from '../components/FilterBar';
+import { Pager } from '../components/Pager';
 import { ProductCard } from '../components/ProductCard';
 import { useRequest } from '../hooks/useRequest';
 import { matchesFilters, parseCategory, type CategoryValue } from '../model/filters';
@@ -30,6 +32,7 @@ export function CatalogPage() {
   const category = parseCategory(params.get('category'));
   const filtering = q.trim() !== '' || category !== null;
   const page = parsePage(params.get('page'));
+  const { role } = useSessionInfo();
 
   const { state, retry } = useRequest<Source>(
     (signal) =>
@@ -62,6 +65,11 @@ export function CatalogPage() {
   return (
     <section>
       <h2>Catálogo</h2>
+      {role === 'ADMIN' && (
+        <p>
+          <Link to="admin">Administrar catálogo</Link>
+        </p>
+      )}
       <FilterBar
         q={q}
         category={category}
@@ -94,17 +102,7 @@ export function CatalogPage() {
               <ProductCard key={product.id} product={product} />
             ))}
           </ul>
-          {view.totalPages > 1 && (
-            <nav aria-label="Paginación" className="pager">
-              <button type="button" disabled={page <= 1} onClick={() => go({ page: page - 1 })}>
-                Anterior
-              </button>
-              <p>{`Página ${view.current} de ${view.totalPages}`}</p>
-              <button type="button" disabled={page >= view.totalPages} onClick={() => go({ page: page + 1 })}>
-                Siguiente
-              </button>
-            </nav>
-          )}
+          <Pager current={view.current} totalPages={view.totalPages} onPage={(next) => go({ page: next })} />
         </>
       )}
     </section>

@@ -1,4 +1,4 @@
-import type { Page, Product } from '../catalog/model/product';
+import type { AdminProduct, Page, Product } from '../catalog/model/product';
 
 export function product(overrides: Partial<Product> & Pick<Product, 'id' | 'name'>): Product {
   return {
@@ -14,7 +14,11 @@ export function product(overrides: Partial<Product> & Pick<Product, 'id' | 'name
   };
 }
 
-export function pageOf(products: Product[], meta: Partial<Page<Product>['meta']> = {}): Page<Product> {
+export function adminProduct(overrides: Partial<AdminProduct> & Pick<AdminProduct, 'id' | 'name'>): AdminProduct {
+  return { ...product(overrides), isActive: true, ...overrides };
+}
+
+export function pageOf<T extends Product>(products: T[], meta: Partial<Page<T>['meta']> = {}): Page<T> {
   return { data: products, meta: { page: 1, limit: 12, total: products.length, totalPages: products.length === 0 ? 0 : 1, ...meta } };
 }
 

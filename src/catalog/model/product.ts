@@ -15,6 +15,11 @@ export interface Product {
   readonly imageUrl: string | null;
 }
 
+/** What the administration sees of a product: the same, and whether it is on sale. */
+export interface AdminProduct extends Product {
+  readonly isActive: boolean;
+}
+
 export interface PageMeta {
   readonly page: number;
   readonly limit: number;

@@ -1,5 +1,6 @@
 import { apiClient, type ShellRequestOptions } from 'shell/apiClient';
 import type { Page, Product } from '../model/product';
+import { collectAll } from './pages';
 
 export interface PageRequest {
   readonly page: number;
@@ -25,21 +26,10 @@ export async function getProduct(id: string, signal?: AbortSignal): Promise<Prod
   return response.data;
 }
 
-/** The service allows at most this many in one answer. */
-const MAX_LIMIT = 100;
-/** A guard: a catalog of 5000 products is not loaded into a browser, whatever the service says. */
-const MAX_PAGES = 50;
-
 /**
  * The whole catalog, page by page. The service pages and does not filter, so a screen that filters needs all of it. Every
  * request carries the same signal: cancelling it cancels the one in flight and stops the loop.
  */
-export async function listAllProducts(signal?: AbortSignal): Promise<readonly Product[]> {
-  const products: Product[] = [];
-  for (let page = 1; page <= MAX_PAGES; page += 1) {
-    const answer = await listProducts({ page, limit: MAX_LIMIT }, signal);
-    products.push(...answer.data);
-    if (page >= answer.meta.totalPages) break;
-  }
-  return products;
+export function listAllProducts(signal?: AbortSignal): Promise<readonly Product[]> {
+  return collectAll((page, limit) => listProducts({ page, limit }, signal));
 }
