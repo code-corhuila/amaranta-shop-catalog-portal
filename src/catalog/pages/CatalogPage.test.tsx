@@ -27,6 +27,15 @@ describe('the four states of the list', () => {
     expect(screen.getByRole('status')).toHaveTextContent(/cargando productos/i);
   });
 
+  it('draws placeholders in the shape of the cards while it loads, hidden from a screen reader that already has the status', () => {
+    vi.mocked(apiClient.get).mockReturnValue(new Promise(() => undefined));
+    const { container } = renderAt('/catalog');
+    const placeholders = container.querySelectorAll('.skeleton');
+    expect(placeholders.length).toBeGreaterThanOrEqual(6);
+    expect(placeholders[0]?.closest('[aria-hidden="true"]')).not.toBeNull();
+    expect(screen.getByRole('status')).toHaveClass('sr-only');
+  });
+
   it('shows the products with their formatted price, as the service sent it', async () => {
     vi.mocked(apiClient.get).mockResolvedValue(ok(pageOf([croquetas, juguete])));
     renderAt('/catalog');

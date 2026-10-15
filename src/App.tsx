@@ -1,5 +1,6 @@
 import { Link, Outlet, Route, Routes } from 'react-router-dom';
 import { RequireRole } from 'shell/auth';
+import './catalog/catalog.css';
 import { CatalogPage } from './catalog/pages/CatalogPage';
 import { ProductPage } from './catalog/pages/ProductPage';
 import { AdminListPage } from './catalog/pages/AdminListPage';
