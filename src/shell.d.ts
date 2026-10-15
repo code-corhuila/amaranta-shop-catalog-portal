@@ -40,3 +40,36 @@ declare module 'shell/auth' {
   export function useSessionInfo(): SessionInfo;
   export function RequireRole(props: { readonly role: string; readonly children: ReactNode }): ReactNode;
 }
+
+// The cart the shell keeps for every portal: this portal adds to it and the sales portal buys from it. It holds what a person
+// chose (with the name and the price they saw) and never decides a total: that is the service's.
+declare module 'shell/cart' {
+  /** What the service accepts for one line of an order. */
+  export const MAX_QUANTITY: number;
+
+  export interface CartProduct {
+    readonly productId: string;
+    readonly name: string;
+    /** Whole pesos. */
+    readonly price: number;
+    readonly priceFormatted: string;
+    readonly imageUrl: string | null;
+  }
+
+  export interface CartItem extends CartProduct {
+    readonly quantity: number;
+  }
+
+  export interface CartView {
+    readonly items: readonly CartItem[];
+    /** Units, not lines. */
+    readonly count: number;
+    /** Adds to the line of that product. `capped` says the line stopped at the limit. */
+    add(product: CartProduct, quantity?: number): { readonly capped: boolean };
+    setQuantity(productId: string, quantity: number): void;
+    remove(productId: string): void;
+    clear(): void;
+  }
+
+  export function useCart(): CartView;
+}
