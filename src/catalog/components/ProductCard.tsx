@@ -15,7 +15,7 @@ export function ProductCard({ product }: { product: Product }) {
       <h3>
         <Link to={`products/${encodeURIComponent(product.id)}`}>{product.name}</Link>
       </h3>
-      {product.description && <p>{product.description}</p>}
+      {product.description && <p className="product-description">{product.description}</p>}
       <p className="product-price">{product.priceFormatted}</p>
       {product.inStock ? <p className="chip chip-stock">{`${product.stockQuantity} disponibles`}</p> : <p className="chip chip-soldout">Agotado</p>}
       <AddToCartButton product={product} />
