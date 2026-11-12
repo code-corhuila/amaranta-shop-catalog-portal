@@ -6,6 +6,9 @@ import { describe, expect, it, vi } from 'vitest';
 import { deferred, ok, pageOf, product } from '../../test/fixtures';
 import { CatalogPage } from './CatalogPage';
 
+// The 3D puppy of the banner is tested on its own; here it would only load a 3D library no test looks at.
+vi.mock('../components/Dog3D', () => ({ default: () => null }));
+
 /** Mounted the way the shell mounts the portal: under /catalog, with the router the shell owns. */
 function renderAt(url: string) {
   return render(

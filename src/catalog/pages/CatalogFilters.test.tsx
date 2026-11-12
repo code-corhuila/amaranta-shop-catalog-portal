@@ -6,6 +6,9 @@ import { describe, expect, it, vi } from 'vitest';
 import { ok, pageOf, product } from '../../test/fixtures';
 import { CatalogPage } from './CatalogPage';
 
+// The 3D puppy of the banner is tested on its own; here it would only load a 3D library no test looks at.
+vi.mock('../components/Dog3D', () => ({ default: () => null }));
+
 function renderAt(url: string) {
   return render(
     <MemoryRouter initialEntries={[url]}>
@@ -32,13 +35,32 @@ function serve(all: ReturnType<typeof product>[]) {
 }
 
 describe('the filters of the catalog', () => {
-  it('offers a search and a category, each with its label', async () => {
+  it('offers a search, and every category as a button that is always in sight', async () => {
     serve([croquetas, pelota]);
     renderAt('/catalog');
     await screen.findByRole('link', { name: 'Pelota Interactiva' });
     expect(screen.getByLabelText('Buscar')).toBeInTheDocument();
-    const category = screen.getByLabelText('Categoría');
-    expect(within(category).getAllByRole('option').map((o) => o.textContent)).toEqual(['Todas', 'Alimento', 'Accesorios', 'Higiene', 'Medicamentos', 'Juguetes']);
+    const categories = screen.getByRole('group', { name: 'Categoría' });
+    expect(within(categories).getAllByRole('button').map((b) => b.textContent?.replace(/^\p{Extended_Pictographic}/u, ''))).toEqual([
+      'Todas',
+      'Alimento',
+      'Accesorios',
+      'Higiene',
+      'Medicamentos',
+      'Juguetes',
+    ]);
+  });
+
+  it('marks the category that is chosen, and "Todas" when none is', async () => {
+    serve([croquetas, pelota]);
+    renderAt('/catalog');
+    await screen.findByRole('link', { name: 'Pelota Interactiva' });
+    expect(screen.getByRole('button', { name: 'Todas' })).toHaveAttribute('aria-pressed', 'true');
+    expect(screen.getByRole('button', { name: 'Juguetes' })).toHaveAttribute('aria-pressed', 'false');
+
+    await userEvent.click(screen.getByRole('button', { name: 'Juguetes' }));
+    expect(screen.getByRole('button', { name: 'Juguetes' })).toHaveAttribute('aria-pressed', 'true');
+    expect(screen.getByRole('button', { name: 'Todas' })).toHaveAttribute('aria-pressed', 'false');
   });
 
   it('does not ask for the whole catalog while nobody filters: the service pages', async () => {
@@ -64,7 +86,7 @@ describe('the filters of the catalog', () => {
     renderAt('/catalog');
     await screen.findByRole('link', { name: 'Pelota Interactiva' });
 
-    await userEvent.selectOptions(screen.getByLabelText('Categoría'), 'Juguetes');
+    await userEvent.click(screen.getByRole('button', { name: 'Juguetes' }));
     expect(await screen.findByRole('link', { name: 'Pelota Interactiva' })).toBeInTheDocument();
     expect(screen.queryByRole('link', { name: 'Rascador Torre' })).not.toBeInTheDocument();
   });
@@ -75,7 +97,7 @@ describe('the filters of the catalog', () => {
     expect(await screen.findByRole('link', { name: 'Rascador Torre' })).toBeInTheDocument();
     expect(screen.queryByRole('link', { name: 'Pelota Interactiva' })).not.toBeInTheDocument();
     expect(screen.getByLabelText('Buscar')).toHaveValue('torre');
-    expect(screen.getByLabelText('Categoría')).toHaveValue('ACCESSORIES');
+    expect(screen.getByRole('button', { name: 'Accesorios' })).toHaveAttribute('aria-pressed', 'true');
   });
 
   it('looks through the whole catalog when it filters, not only the page on screen', async () => {

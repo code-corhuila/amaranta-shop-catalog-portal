@@ -4,6 +4,9 @@ import { MemoryRouter, Route, Routes } from 'react-router-dom';
 import { describe, expect, it, vi } from 'vitest';
 import App from './App';
 
+// The 3D puppy of the banner is tested on its own; here it would only load a 3D library no test looks at.
+vi.mock('./catalog/components/Dog3D', () => ({ default: () => null }));
+
 describe('App, the component the shell mounts under /catalog', () => {
   it('shows the catalog at the route the shell mounted it on', () => {
     vi.mocked(apiClient.get).mockReturnValue(new Promise(() => undefined));

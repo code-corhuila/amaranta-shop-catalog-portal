@@ -1,4 +1,4 @@
-import { useMemo } from 'react';
+import { lazy, Suspense, useMemo } from 'react';
 import { Link, useSearchParams } from 'react-router-dom';
 import { useSessionInfo } from 'shell/auth';
 import { listAllProducts, listProducts } from '../api/catalogApi';
@@ -11,6 +11,9 @@ import { matchesFilters, parseCategory, type CategoryValue } from '../model/filt
 import type { Page, Product } from '../model/product';
 
 const PAGE_SIZE = 12;
+
+/** The 3D puppy of the banner. It is the only thing that needs the 3D library, so it loads apart and the list never waits for it. */
+const Dog3D = lazy(() => import('../components/Dog3D'));
 
 /** The page the address asks for; anything that is not a whole number from 1 up is the first page. */
 function parsePage(raw: string | null): number {
@@ -64,12 +67,23 @@ export function CatalogPage() {
 
   return (
     <section>
-      <h2>Catálogo</h2>
-      {role === 'ADMIN' && (
-        <p>
-          <Link to="admin">Administrar catálogo</Link>
-        </p>
-      )}
+      <header className="catalog-hero">
+        <div className="catalog-hero-text">
+          <p className="hero-kicker">Amaranta Shop</p>
+          <h2>Catálogo</h2>
+          <p className="hero-lead">Todo para tu mejor amigo: alimento, juguetes e higiene.</p>
+          {role === 'ADMIN' && (
+            <p>
+              <Link to="admin" className="hero-link">
+                Administrar catálogo
+              </Link>
+            </p>
+          )}
+        </div>
+        <Suspense fallback={<div className="dog3d" aria-hidden="true" />}>
+          <Dog3D />
+        </Suspense>
+      </header>
       <FilterBar
         q={q}
         category={category}

@@ -7,11 +7,12 @@ import css from './catalog.css?raw';
  * contract the portal relies on; a token the shell does not define would silently draw nothing.
  */
 const SHELL_TOKENS = new Set([
+  '--brand-50', '--brand-100', '--brand-200', '--brand-300', '--brand-400', '--brand-500', '--brand-600', '--brand-700', '--gradient-primary',
   '--color-ember-50', '--color-ember-100', '--color-ember-200', '--color-ember-300', '--color-ember-400', '--color-ember-500', '--color-ember-600', '--color-ember-700',
   '--color-ocean-50', '--color-ocean-100', '--color-ocean-200', '--color-ocean-600', '--color-ocean-700',
   '--color-cream-50', '--color-cream-100', '--color-ink-900', '--color-ink-muted',
   '--font-family-display', '--font-family-sans',
-  '--radius-lg', '--radius-xl2', '--radius-full', '--shadow-card',
+  '--radius-lg', '--radius-xl2', '--radius-full', '--shadow-card', '--shadow-lift', '--gradient-hero',
   '--surface', '--field-border', '--field-error', '--alert-success-bg', '--alert-success-text', '--alert-success-border',
 ]);
 
@@ -40,6 +41,13 @@ describe('the stylesheet of the portal', () => {
 
   it('lays the products out as a grid that gives way to fewer columns on a narrow screen', () => {
     expect(rules).toMatch(/\.product-grid\s*\{[^}]*grid-template-columns:\s*repeat\(auto-fill,\s*minmax\(/);
+  });
+
+  it('draws the brand with the blue tokens, and keeps the red only for what is sold out', () => {
+    expect(rules).toMatch(/\.chip-filter\[aria-pressed='true'\]\s*\{[^}]*var\(--gradient-primary\)/);
+    const ember = [...rules.matchAll(/var\((--color-ember-\d+)\)/g)].length;
+    expect(ember).toBe(2);
+    expect(rules).toMatch(/\.chip-soldout\s*\{[^}]*--color-ember-100[^}]*--color-ember-700/);
   });
 
   it('lets a wide table scroll instead of breaking the page on a phone', () => {
